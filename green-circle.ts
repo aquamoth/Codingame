@@ -1,98 +1,40 @@
 //#region CodinGame API
 let _readline_indexer = 0
 const _readline_commands = [
-    // 'MOVE'
-    // , '12'
-    // , 'APPLICATION 6 0 0 2 0 0 2 2 0'
-    // , 'APPLICATION 14 2 2 0 2 0 0 0 0'
-    // , 'APPLICATION 1 0 2 0 0 2 0 0 2'
-    // , 'APPLICATION 7 2 0 0 2 0 2 0 0'
-    // , 'APPLICATION 23 2 0 0 2 0 0 0 2'
-    // , 'APPLICATION 17 2 2 0 0 0 2 0 0'
-    // , 'APPLICATION 8 0 4 0 4 0 0 0 0'
-    // , 'APPLICATION 18 0 0 0 4 4 0 0 0'
-    // , 'APPLICATION 5 4 0 0 0 0 0 4 0'
-    // , 'APPLICATION 12 0 4 0 0 0 0 0 4'
-    // , 'APPLICATION 19 0 0 0 4 0 4 0 0'
-    // , 'APPLICATION 11 0 4 0 0 0 0 4 0'
-    // , '-1 0 0 0'
-    // , '-1 0 0 0'
-    // , '3'
-    // , 'HAND 0 0 0 0 0 0 0 0 2 2'
-    // , 'DRAW 0 0 0 0 0 0 0 0 2 2'
-    // , 'OPPONENT_CARDS 0 0 0 0 0 0 0 0 4 4'
-    // , '9'
-    // , 'MOVE 0'
-    // , 'MOVE 1'
-    // , 'MOVE 2'
-    // , 'MOVE 3'
-    // , 'MOVE 4'
-    // , 'MOVE 5'
-    // , 'MOVE 6'
-    // , 'MOVE 7'
-    // , 'RANDOM'
-
-
-    // , 'RELEASE'
-    // , '12'
-    // , 'APPLICATION 6 0 0 2 0 0 2 2 0'
-    // , 'APPLICATION 14 2 2 0 2 0 0 0 0'
-    // , 'APPLICATION 1 0 2 0 0 2 0 0 2'
-    // , 'APPLICATION 7 2 0 0 2 0 2 0 0'
-    // , 'APPLICATION 23 2 0 0 2 0 0 0 2'
-    // , 'APPLICATION 17 2 2 0 0 0 2 0 0'
-    // , 'APPLICATION 8 0 4 0 4 0 0 0 0'
-    // , 'APPLICATION 18 0 0 0 4 4 0 0 0'
-    // , 'APPLICATION 5 4 0 0 0 0 0 4 0'
-    // , 'APPLICATION 12 0 4 0 0 0 0 0 4'
-    // , 'APPLICATION 19 0 0 0 4 0 4 0 0'
-    // , 'APPLICATION 11 0 4 0 0 0 0 4 0'
-    // , '6 0 0 0'
-    // , '-1 0 0 0'
-    // , '3'
-    // , 'HAND 0 0 0 0 0 0 1 0 2 2'
-    // , 'DRAW 0 0 0 0 0 0 0 0 2 2'
-    // , 'OPPONENT_CARDS 0 0 0 0 0 0 0 0 4 4'
-    // , '10'
-    // , 'RELEASE 6'
-    // , 'RELEASE 14'
-    // , 'RELEASE 1'
-    // , 'RELEASE 7'
-    // , 'RELEASE 23'
-    // , 'RELEASE 17'
-    // , 'RELEASE 5'
-    // , 'RELEASE 11'
-    // , 'RANDOM'
-    // , 'WAIT'
-
-'MOVE',
-'4',
-'APPLICATION 8 0 4 0 4 0 0 0 0',
-'APPLICATION 18 0 0 0 4 4 0 0 0',
-'APPLICATION 12 0 4 0 0 0 0 0 4',
-'APPLICATION 11 0 4 0 0 0 0 4 0',
-'3 4 0 0',
-'1 4 0 1',
-'4',
-'HAND 0 0 0 0 1 0 0 0 1 2',
-'DRAW 2 1 0 1 1 1 3 3 4 6',
-'DISCARD 0 2 1 2 1 0 0 0 1 3',
-'OPPONENT_CARDS 2 2 2 2 1 2 2 2 11 18',
-'8',
-'MOVE 4',
-'MOVE 5',
-'MOVE 6',
-'MOVE 7',
-'MOVE 0',
-'MOVE 1',
-'MOVE 2',
-'RANDOM',
+    'MOVE',
+    '11',
+    'APPLICATION 16 0 0 4 0 0 0 4 0',
+    'APPLICATION 15 0 0 4 0 0 4 0 0',
+    'APPLICATION 17 0 0 4 0 0 0 0 4',
+    'APPLICATION 26 0 0 0 0 0 4 0 4',
+    'APPLICATION 4 4 0 0 0 0 4 0 0',
+    'APPLICATION 27 0 0 0 0 0 0 4 4',
+    'APPLICATION 20 0 0 0 4 0 0 4 0',
+    'APPLICATION 3 4 0 0 0 4 0 0 0',
+    'APPLICATION 6 4 0 0 0 0 0 0 4',
+    'APPLICATION 1 4 0 4 0 0 0 0 0',
+    'APPLICATION 8 0 4 0 4 0 0 0 0',
+    '1 1 0 1',
+    '0 0 2 0',
+    '4',
+    'HAND 1 1 3 0 0 0 0 0 0 0',
+    'DRAW 0 0 0 0 0 0 0 0 3 2',
+    'DISCARD 3 1 0 1 1 0 0 0 4 4',
+    'OPPONENT_CARDS 0 0 0 0 0 0 1 0 2 6',
+    '8',
+    'MOVE 2',
+    'MOVE 3',
+    'MOVE 4',
+    'MOVE 5',
+    'MOVE 6',
+    'MOVE 7',
+    'MOVE 0',
+    'RANDOM',
 ]
-function readline() {
+export function readline() {
     return _readline_commands[_readline_indexer++];
 }
 //#endregion
-
 
 
 
@@ -183,13 +125,30 @@ type Player = {
     permanentArchitectureStudyCards: number;
 }
 
+type MoveCommand = {
+    verb: 'MOVE',
+    text: string,
+    desk: Desk,
+    card: Desk
+}
+type ReleaseCommand = {
+    verb: 'RELEASE',
+    text: string,
+    app: number
+}
+type UnsupportedCommand = {
+    verb: string,
+    text: string
+}
+type Command = MoveCommand | ReleaseCommand | UnsupportedCommand;
+
 class Game {
     private isFirstRun = true;
     private gamePhase: string;
     private applications: Application[];
     private players: Player[];
-    private cards: CardLocations; //Dictionary<CardScores>;//Dictionary<CardScore>>;
-    private moves: string[];
+    private cards: CardLocations;
+    private commands: Command[];
 
     private appToRelease: ScoredApp = null;
 
@@ -225,90 +184,108 @@ class Game {
 
     private processMove() {
 
-        function createDeskMap(moves: string[]) {
-            const deskMap: { [desk: number]: boolean } = {}
-            const deskNumbers = moves.filter(move => move.startsWith('MOVE ')).map(move => +move.substring(5));
-            for (const desk of deskNumbers) deskMap[desk] = true;
-            // console.error('Available desks', deskMap);
-            return deskMap;
-        }
+        // function createDeskMap(moves: string[]) {
+        //     const deskMap: { [desk: number]: boolean } = {}
+        //     const deskNumbers = moves.filter(move => move.startsWith('MOVE ')).map(move => +move.substring(5));
+        //     for (const desk of deskNumbers) deskMap[desk] = true;
+        //     // console.error('Available desks', deskMap);
+        //     return deskMap;
+        // }
 
-        function buildLocationsToAvoid(myLocation, opponentLocation) {
-            const desks = []
-            if (myLocation !== -1) desks.push(my.location);
-            if (opponentLocation !== -1) {
-                desks.push(opponentLocation)
-                desks.push((opponentLocation + 1) % 8)
-                desks.push((opponentLocation - 1 + 8) % 8)
-            }
-            return desks
-        }
+        // function buildLocationsToAvoid(myLocation, opponentLocation) {
+        //     const desks = []
+        //     if (myLocation !== -1) desks.push(my.location);
+        //     if (opponentLocation !== -1) {
+        //         desks.push(opponentLocation)
+        //         desks.push((opponentLocation + 1) % 8)
+        //         desks.push((opponentLocation - 1 + 8) % 8)
+        //     }
+        //     return desks
+        // }
 
         this.appToRelease = null;
 
         const my = this.players[0];
         const opponent = this.players[1];
         const myHand = this.cards[CardLocation[CardLocation.HAND]];
-        const deskMap = createDeskMap(this.moves);
-        const locationsToAvoid = buildLocationsToAvoid(my.location, opponent.location)
+        // const deskMap = createDeskMap(this.moves);
+        // const locationsToAvoid = buildLocationsToAvoid(my.location, opponent.location)
 
 
-        const bestDesks = Game.sortDesksByCardNeed(this.applications);
+        // const bestDesks = Game.sortDesksByCardNeed(this.applications);
 
+        const moves = this.commands.filter(isOfTypeMove);
+
+
+        const penaltyLocations = opponent.location === -1
+            ? []
+            : [
+                opponent.location,
+                (opponent.location + 1) % 8,
+                (opponent.location - 1 + 8) % 8,
+            ];
 
         const scoredApps = Game.scoreApps(this.applications, myHand)
-            .map(app => ({
-                ...app, 
-                bestDeskIndex: Object.keys(app.cards)
-                .map(desk => desk as unknown as Desk)
-                .filter(desk => app.cards[desk] > 0)
-                .map(desk => bestDesks.indexOf(desk))
-                .reduce((prev,next) => prev < next ? prev: next)
-            }))
+            .sort(sortAppsByScore);
 
-        const sortedApps = scoredApps.sort((prev, next) => {
-            if (prev.score === next.score)
-                return prev.bestDeskIndex < next.bestDeskIndex ? -1 : 1;
 
+        let appIndex = 0;
+        let usefulMoves: MoveCommand[] = [];
+        let consideredMoves: MoveCommand[] = [];
+        while (consideredMoves.length === 0 && appIndex < scoredApps.length) {
+            const bestApps = scoredApps.filter(app => app.score === scoredApps[appIndex].score);
+    
+            const usefulCards = bestApps.flatMap(app => 
+                Array.from(
+                    Object.entries(app.cards)
+                        .filter(kvp => kvp[1] > 0)
+                        .map(kvp => kvp[0] as keyof typeof Desk)
+                    )
+                )
+                .map(deskName => Desk[deskName]);
+                
+            usefulMoves = moves.filter(move => usefulCards.some(card => card === move.card))
+            consideredMoves = filterPenaltyMoves(usefulMoves, opponent.location);
+
+            appIndex += bestApps.length;
+        }
+
+        if (!consideredMoves) {
+            //TODO: Find the best apps shortest move before accepting any move
+            //TODO: Consider evaluating moves by other criteria than release
+            consideredMoves = moves;
+            console.error('Not found any useful moves. Choosing among all moves.')
+        }
+        console.error('considered moves', consideredMoves)
+
+        if (my.location >= 0) {
+            consideredMoves.sort((a, b) => distanceTo(a.desk, my.location) - distanceTo(b.desk, my.location));
+            console.error('Sorted moves', consideredMoves)
+        }
+        
+        const chosenMove = consideredMoves[0];
+        console.log(chosenMove.text);
+        
+        
+        function distanceTo(desk: Desk, location: number) {
+            return (desk - location + 8) % 8;
+        }
+        
+        function isOfTypeMove(command: Command): command is MoveCommand { return command.verb === 'MOVE'; }
+
+        function sortAppsByScore(prev: ScoredApp, next: ScoredApp) {
             return prev.score < next.score ? -1 : 1;
-        });
-
-
-
-        if (sortedApps[0].score === 0) {
-            console.error('Can complete app without penalty. Deciding best next move NOT IMPLEMENTED');
-            this.appToRelease = sortedApps[0]
-        }
-        else {
-            for (const app of sortedApps) {
-                console.error(`App ${app.id} costs ${app.score} points`)
-                if (app.score > 4) {
-                    console.error(`No app will fulfill quality requirement. Breaking`);
-                    break;
-                }
-
-                const greatDesks = Object.keys(app.cards)
-                    .filter(deskName => app.cards[deskName] > 0)
-                    .map(deskName => +Desk[deskName])
-                    .filter(deskNo => deskMap[deskNo])
-                    .filter(deskNo => locationsToAvoid.every(location => location !== deskNo));
-
-                console.error(`App ${app.id} great desks`, greatDesks);
-
-                if (greatDesks.length) {
-                    console.log('MOVE ' + greatDesks[0]);
-                    return;
-                }
-            }
         }
 
-
-        console.error('Not decided on a desk to move to. Using best desk...')
-        const bestMoves = bestDesks.map(deskName => +Desk[deskName])
-            .filter(deskNo => deskMap[deskNo])
-            .filter(deskNo => locationsToAvoid.every(location => location !== deskNo));
-
-        console.log('MOVE ' + +bestMoves[0]);
+        function filterPenaltyMoves(moves: MoveCommand[], deskIndex: number){
+            if (deskIndex<0)
+                return moves;
+                
+            return moves
+                .filter(move => move.desk !== deskIndex)
+                .filter(move => move.desk !== (deskIndex + 1) % 8)
+                .filter(move => move.desk !== (deskIndex - 1 + 8) % 8);
+        }
     }
 
     static sortDesksByCardNeed(applications: Application[]): Desk[] {
@@ -425,7 +402,7 @@ class Game {
         this.applications = this.parseApps();
         this.players = this.parsePlayers();
         this.cards = this.parseCardLocations();
-        this.moves = this.parseMoves();
+        this.commands = this.parseMoves();
     }
 
     private parseApps(): Application[] {
@@ -522,17 +499,28 @@ class Game {
     }
 
     private parseMoves() {
-        const moves = [];
-        const possibleMovesCount = parseInt(readlineDEBUG());
-        for (let i = 0; i < possibleMovesCount; i++) {
-            const possibleMove = readlineDEBUG();
-            moves.push(possibleMove);
+        const moves: Command[] = [];
+        const count = parseInt(readlineDEBUG());
+        for (let i = 0; i < count; i++) {
+            const text = readlineDEBUG();
+            const parts = text.split(' ')
+            switch (parts[0]) {
+                case 'MOVE':
+                    const desk = +parts[1] as Desk;
+                    const card = parts.length > 2 ? +parts[2] as Desk : desk;
+                    moves.push({ verb: parts[0], text, desk, card });
+                    break;
+                case 'RELEASE':
+                    const app = +parts[1];
+                    moves.push({ verb: parts[0], text, app });
+                    break;
+                default:
+                    moves.push({ verb: parts[0], text });
+                    break;
+            }
         }
         return moves;
     }
-
-
-
 }
 
 
