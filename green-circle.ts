@@ -1,28 +1,27 @@
+"strict"
+
 //#region CodinGame API
 let _readline_indexer = 0
 const _readline_commands = [
     'PLAY_CARD',
-    '11',
-    'APPLICATION 8 0 4 0 4 0 0 0 0',
+    '7',
     'APPLICATION 0 4 4 0 0 0 0 0 0',
     'APPLICATION 6 4 0 0 0 0 0 0 4',
-    'APPLICATION 1 4 0 4 0 0 0 0 0',
     'APPLICATION 11 0 4 0 0 0 0 4 0',
     'APPLICATION 24 0 0 0 0 4 0 0 4',
-    'APPLICATION 13 0 0 4 4 0 0 0 0',
     'APPLICATION 22 0 0 0 0 4 4 0 0',
     'APPLICATION 12 0 4 0 0 0 0 0 4',
     'APPLICATION 20 0 0 0 4 0 0 4 0',
-    'APPLICATION 9 0 4 0 0 4 0 0 0',
-    '7 0 0 0',
-    '1 1 0 0',
+    '2 1 1 0',
+    '4 4 0 1',
     '4',
-    'HAND 0 0 0 0 0 0 0 1 2 2',
-    'DRAW 1 0 0 0 0 0 0 0 1 0',
-    'DISCARD 0 1 0 0 0 0 1 0 1 2',
-    'OPPONENT_CARDS 0 2 0 1 1 0 0 0 2 10',
-    '3',
-    'REFACTORING',
+    'HAND 1 1 0 0 0 0 0 0 1 2',
+    'DISCARD 1 0 0 1 1 1 1 0 3 6',
+    'OPPONENT_CARDS 0 2 0 0 1 0 0 2 2 26',
+    'OPPONENT_AUTOMATED 0 1 0 0 0 0 0 0 0 0',
+    '4',
+    'TRAINING',
+    'CODING',
     'RANDOM',
     'WAIT',
 ]
@@ -77,7 +76,7 @@ enum CardPlays {
     CODING,
     DAILY_ROUTINE,
     TASK_PRIORIZATION,
-    ARCITECTURE_STUDY,
+    ARCHITECTURE_STUDY,
     CONTINOUS_DELIVERY,
     CODE_REVIEW,
     REFACTORING
@@ -133,6 +132,10 @@ type MoveCommand = {
     desk: Desk,
     card: Desk
 }
+type PlayCommand = {
+    verb: 'PLAY_CARD',
+    text: string
+}
 type ReleaseCommand = {
     verb: 'RELEASE',
     text: string,
@@ -142,23 +145,67 @@ type UnsupportedCommand = {
     verb: string,
     text: string
 }
-type Command = MoveCommand | ReleaseCommand | UnsupportedCommand;
+type Command = MoveCommand | PlayCommand | ReleaseCommand | UnsupportedCommand;
 
+interface ScoredPlayCommand extends PlayCommand {
+    score: number
+}
+
+const NO_REAL_APP = {
+    objectType: 'NO_REAL_APP', 
+    id: -99, 
+    cards:{
+        training: 0,
+        coding: 0,
+        dailyRoutine: 0,
+        taskPrioritization: 0,
+        architectureStudy: 0,
+        continuousDelivery: 0,
+        codeReview: 0,
+        refactoring: 0
+    }, 
+    score: 9999
+}
+
+const NO_CARD_SCORES: CardScores = {
+    architectureStudy: { count:0, score: 0},
+    bonus:{ count:0, score: 0},
+    codeReview: { count:0, score: 0},
+    coding: { count:0, score: 0},
+    continuousDelivery:{ count:0, score: 0},
+    dailyRoutine:{ count:0, score: 0},
+    refactoring: { count:0, score: 0},
+    taskPrioritization: { count:0, score: 0},
+    technicalDebt:{ count:0, score: 0},
+    training:{ count:0, score: 0}
+}
+
+const NO_CARD_LOCATIONS: CardLocations = {
+    DISCARD: NO_CARD_SCORES,
+    DRAW: NO_CARD_SCORES,
+    HAND: NO_CARD_SCORES,
+    OPPONENT_CARDS: NO_CARD_SCORES
+}
 class Game {
     private isFirstRun = true;
-    // private haveDailyRoutine = true;
-    private appToRelease: ScoredApp = null;
+    private appToRelease: ScoredApp|null = null;
 
-    private gamePhase: string;
-    private applications: Application[];
-    private players: Player[];
-    private cards: CardLocations;
-    private commands: Command[];
+    private gamePhase: string="";
+    private applications: Application[]=[];
+    private players: Player[]=[];
+    private cards: CardLocations = NO_CARD_LOCATIONS;
+    private commands: Command[]=[];
 
+    private maxShabbyPoints = 2;
 
     public step() {
 
         this.parseInputs();
+
+
+        if (this.players[0].score ===5)
+            this.maxShabbyPoints = 0;
+
 
         if (this.isFirstRun) {
             //TODO: Do first-run preparations here
@@ -206,165 +253,143 @@ class Game {
                 (opponent.location - 1 + 8) % 8,
             ];
 
-        const scoredApps = Game.scoreApps(this.applications, myHand)
-            .sort(sortAppsByScore);
+
+        const cheapMoves = moves.filter(move => penaltyLocations.every(penalty => penalty !== move.desk));
+        const chosenMove = cheapMoves[0] ?? moves[0];
+
+        //TODO: In case of same move can take different cards, we should take the most useful card
 
 
-        let appIndex = 0;
-        let usefulMoves: MoveCommand[] = [];
-        let consideredMoves: MoveCommand[] = [];
-        while (consideredMoves.length === 0 && appIndex < scoredApps.length) {
-            const bestApps = scoredApps.filter(app => app.score === scoredApps[appIndex].score);
+
+        // const scoredApps = Game.scoreApps(this.applications, myHand)
+        //     .sort(sortAppsByScore);
+
+
+        // let appIndex = 0;
+        // let usefulMoves: MoveCommand[] = [];
+        // let consideredMoves: MoveCommand[] = [];
+        // while (consideredMoves.length === 0 && appIndex < scoredApps.length) {
+        //     const bestApps = scoredApps.filter(app => app.score === scoredApps[appIndex].score);
     
-            const usefulCards = bestApps.flatMap(app => 
-                Array.from(
-                    Object.entries(app.cards)
-                        .filter(kvp => kvp[1] > 0)
-                        .map(kvp => kvp[0] as keyof typeof Desk)
-                    )
-                )
-                .map(deskName => Desk[deskName]);
+        //     const usefulCards = bestApps.flatMap(app => 
+        //         Array.from(
+        //             Object.entries(app.cards)
+        //                 .filter(kvp => kvp[1] > 0)
+        //                 .map(kvp => kvp[0] as keyof typeof Desk)
+        //             )
+        //         )
+        //         .map(deskName => Desk[deskName]);
                 
-            usefulMoves = moves.filter(move => usefulCards.some(card => card === move.card))
-            consideredMoves = filterPenaltyMoves(usefulMoves, opponent.location);
+        //     usefulMoves = moves.filter(move => usefulCards.some(card => card === move.card))
+        //     consideredMoves = filterPenaltyMoves(usefulMoves, opponent.location);
 
-            appIndex += bestApps.length;
-        }
+        //     appIndex += bestApps.length;
+        // }
 
-        if (!consideredMoves) {
-            //TODO: Find the best apps shortest move before accepting any move
-            //TODO: Consider evaluating moves by other criteria than release
-            consideredMoves = moves;
-            console.error('Not found any useful moves. Choosing among all moves.')
-        }
-        console.error('considered moves', consideredMoves)
+        // if (!consideredMoves) {
+        //     //TODO: Find the best apps shortest move before accepting any move
+        //     //TODO: Consider evaluating moves by other criteria than release
+        //     consideredMoves = moves;
+        //     console.error('Not found any useful moves. Choosing among all moves.')
+        // }
+        // console.error('considered moves', consideredMoves)
 
-        if (my.location >= 0) {
-            consideredMoves.sort((a, b) => distanceTo(a.desk, my.location) - distanceTo(b.desk, my.location));
-            console.error('Sorted moves', consideredMoves)
-        }
+        // if (my.location >= 0) {
+        //     consideredMoves.sort((a, b) => distanceTo(a.desk, my.location) - distanceTo(b.desk, my.location));
+        //     console.error('Sorted moves', consideredMoves)
+        // }
         
-        const chosenMove = consideredMoves[0];
         console.log(chosenMove.text);
         
     }
 
     private processPlayCard() {
-        const plays = this.commands.filter(command => command.verb === 'PLAY_CARD');
+        const plays = this.commands.filter(isOfTypePlay);
         console.error('possible plays', plays);
-
-        // const numberOfCardsOnHand = Object.values(this.cards.HAND).map(value=>value.count).reduce((a,b)=>a+b);
-        // const minCardsNeededByApp = this.applications.map(app=>Object.values(app.cards).reduce((a,b)=>a+b)).reduce((a,b)=>a<b?a:b);
 
         const scoredApp = this.appToRelease
             ? Game.scoreApps([this.appToRelease], this.cards.HAND)[0]
-            : { id: -1, score: 99999 };
-
-        if(scoredApp.id>=0){
+            : NO_REAL_APP;
+        
+        if (scoredApp.id >= 0){
             console.error(`Trying to release app ${scoredApp.id} with score ${scoredApp.score}`);
         }
 
 
-        if (plays.filter(play=>play.text === CardPlays[CardPlays.CONTINOUS_DELIVERY]).length) {
-            console.error('Considering to play CI card');
-            const skillCards = Object.entries(this.cards.HAND)
-                .filter(x=>x[1].score>0)
-                .filter(x=>x[0] !== "BONUS")
-                .map(x=>x[0]);
-            
-            console.error('skill cards on hand', skillCards);
-            if(skillCards.length) {
-                console.log(CardPlays[CardPlays.CONTINOUS_DELIVERY], skillCards[0]);
-                return;
-            }
-        }
-
-
-
-        if (plays.filter(play => play.text === CardPlays[CardPlays.DAILY_ROUTINE]).length){
-            console.error('Considering to play daily routine card');
-            if (this.players[0].permanentDailyRoutineCards === 0) {
-                console.error(`Not played daily routine before.`);
-                if (scoredApp.score > 0) {
-                    console.log(`DAILY_ROUTINE`);
-                    // this.haveDailyRoutine = true;
-                    return;
-                }
-            }
-        }
-
-        if (isScoredApp(scoredApp)) {
-
-            if (plays.filter(play=>play.text==='TRAINING').length) {
-                console.error('Considering to play training card');
-                if(this.cards.HAND.training.score > this.appToRelease.cards.training) {
-                    console.error('Have extra training card to use');
-                    const usefulCards = Object.keys(this.cards.DRAW)
-                        .filter(card => card === 'BONUS' || scoredApp.cards[card] > 0)
-                    
-                    console.error('Useful cards in the draw pile', usefulCards);
-                    if (usefulCards.length) {
-                        console.log(`TRAINING`);
-                        return;
-                    }
-                }
-            }
-
-
-            
-            if (plays.filter(play=>play.text==='REFACTORING').length) {
-                console.error('Considering to play refactoring card');
-                if(this.cards.HAND.refactoring.count > this.appToRelease.cards.refactoring) {
-                    console.error('Have extra refactoring card to use');
-                    if(this.cards.HAND.technicalDebt.count > 0) {
-                        console.error('Have tech debt to throw');
-                        console.log(`REFACTORING`);
-                        return;
-                    }
-                }
-            }
-
-
-
-
-        }
-        else {
-            console.error(`Not close to release an app`);
-
-
-
-            if (plays.filter(play=>play.text===CardPlays[CardPlays.REFACTORING]).length) {
-                console.error('Considering to play refactoring card');
-                console.error(this.cards.HAND)
-                if(this.cards.HAND.technicalDebt.count > 0) {
-                    console.error('Have tech debt to throw');
-                    console.log(`REFACTORING`);
-                    return;
-                }
-            }            
-        }
-
-
-        if (plays.filter(play=>play.text === CardPlays[CardPlays.CODE_REVIEW]).length) {
-            console.log(CardPlays[CardPlays.CODE_REVIEW]);
+        if (scoredApp.score <= this.maxShabbyPoints){
+            console.error(`Score ${scoredApp.score} < ${this.maxShabbyPoints}`);
+            //TODO: Perhaps play an unused card?
+            console.log("WAIT");
             return;
         }
 
-        if (plays.filter(play=>play.text === CardPlays[CardPlays.ARCITECTURE_STUDY]).length) {
-            console.log(CardPlays[CardPlays.ARCITECTURE_STUDY]);
-            return;
-        }
 
-        if (plays.filter(play=>play.text === CardPlays[CardPlays.TASK_PRIORIZATION]).length) {
-            console.log(CardPlays[CardPlays.TASK_PRIORIZATION], "BONUS", "CODING");
+        const scoredPlays = plays.map(play=>this.scoreCardPlay(play, scoredApp)).reduce((a,b)=>a.score>b.score?a:b);
+        
+        if (scoredPlays.score > 0) {
+            console.log(scoredPlays.text);
             return;
         }
 
         console.log('WAIT');
-        // if(plays.length)
-        //     console.log(plays[0].text);
-        // else
-        //     console.log('RANDOM');
+    }
+
+    private scoreCardPlay(play: PlayCommand, scoredApp: ScoredApp): ScoredPlayCommand {
+        const hand = this.cards.HAND;
+        const player = this.players[0];
+
+        console.error(`Scoring ${play.text}`);
+        let score = 0;
+
+        const requiredCards = scoredApp.id<0 ? 0 : scoredApp.cards[+CardPlays[play.text as any]]
+        const cardsOnHand = hand[play.text.toLowerCase() as unknown as CardType]
+        console.error('required cards in app vs on hand', requiredCards, cardsOnHand)
+
+        switch (play.text) {
+            case CardPlays[CardPlays.CONTINOUS_DELIVERY]:
+
+                const skillCards = Object.entries(hand).filter(x => x[1].score > 0).filter(x => x[0] !== "BONUS");
+                score = skillCards.length === 0 ? 0 : 4;
+                //TODO: Score cards on hand differently, including if they are already automated
+                break;
+
+            case CardPlays[CardPlays.DAILY_ROUTINE]:
+                if (player.permanentDailyRoutineCards === 0) {
+                    console.error(`Not played daily routine before.`);
+                    score = 4;
+                }
+                break;
+
+            case CardPlays[CardPlays.TRAINING]:
+                //if(this.cards.HAND.training.score > this.appToRelease.cards.training) {
+                //    console.error('Have extra training card to use');
+                    const usefulInDrawPile = Object.keys(this.cards.DRAW)
+                        .map(card => card as unknown as CardType)
+                        .filter(card => card === CardType.bonus || scoredApp.cards[card] > 0)
+                    
+                    console.error('Useful cards in the draw pile', usefulInDrawPile);
+                    if (usefulInDrawPile.length) {
+                        score = 4;
+                    }
+                //}
+                break;
+
+            case CardPlays[CardPlays.REFACTORING]:
+                if (this.cards.HAND.refactoring.count > scoredApp.cards.refactoring) {
+                    console.error('Have extra refactoring card to use');
+                    score = this.cards.HAND.technicalDebt.count;
+                }
+                break;
+
+            case CardPlays[CardPlays.ARCHITECTURE_STUDY]:
+            case CardPlays[CardPlays.CODE_REVIEW]:
+            case CardPlays[CardPlays.CODING]:
+            case CardPlays[CardPlays.TASK_PRIORIZATION]:
+            default:
+                break;
+        }
+                
+        return {...play, score}
     }
 
     static sortDesksByCardNeed(applications: Application[]): Desk[] {
@@ -544,12 +569,17 @@ class Game {
     }
 
     private parseCardLocations(): { [location in keyof typeof CardLocation]: CardScores }/*Dictionary<CardScores>*/ {
-        const cardLocations = {};//: {[location in keyof typeof CardLocation]: CardScores}
+        let cardLocations: CardLocations = {
+            DISCARD: NO_CARD_SCORES,
+            DRAW: NO_CARD_SCORES,
+            HAND: NO_CARD_SCORES,
+            OPPONENT_CARDS: NO_CARD_SCORES
+        };
 
         const cardLocationsCount = parseInt(readlineDEBUG());
         for (let i = 0; i < cardLocationsCount; i++) {
             var inputs = readlineDEBUG().split(' ');
-            const location: CardLocation = CardLocation[inputs[0]]; // the location of the card list. It can be HAND, DRAW, DISCARD or OPPONENT_CARDS (AUTOMATED and OPPONENT_AUTOMATED will appear in later leagues)
+            const location: CardLocation = inputs[0] as unknown as CardLocation; // the location of the card list. It can be HAND, DRAW, DISCARD or OPPONENT_CARDS (AUTOMATED and OPPONENT_AUTOMATED will appear in later leagues)
             const training = parseInt(inputs[1]);
             const coding = parseInt(inputs[2]);
             const dailyRoutine = parseInt(inputs[3]);
@@ -574,9 +604,10 @@ class Game {
                 ['technicalDebt']: { count: technicalDebt, score: 0 }
             }
 
-            cardLocations[location] = cards;
+            cardLocations = {...cardLocations, [location]: cards };
         }
-        return cardLocations as CardLocations;
+
+        return cardLocations;
     }
 
     private parseMoves() {
@@ -618,8 +649,8 @@ function distanceTo(desk: Desk, location: number) {
 }
 
 function isOfTypeMove(command: Command): command is MoveCommand { return command.verb === 'MOVE'; }
+function isOfTypePlay(command: Command): command is PlayCommand { return command.verb === 'PLAY_CARD'; }
 function isScoredApp(app: {id: number}): app is ScoredApp { return app.id>0; }
-
 function sortAppsByScore(prev: ScoredApp, next: ScoredApp) {
     return prev.score < next.score ? -1 : 1;
 }
