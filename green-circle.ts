@@ -1,42 +1,43 @@
 //#region CodinGame API
 let _readline_indexer = 0
 const _readline_commands = [
-    'MOVE',
+    'PLAY_CARD',
     '11',
-    'APPLICATION 16 0 0 4 0 0 0 4 0',
-    'APPLICATION 15 0 0 4 0 0 4 0 0',
-    'APPLICATION 17 0 0 4 0 0 0 0 4',
-    'APPLICATION 26 0 0 0 0 0 4 0 4',
-    'APPLICATION 4 4 0 0 0 0 4 0 0',
-    'APPLICATION 27 0 0 0 0 0 0 4 4',
-    'APPLICATION 20 0 0 0 4 0 0 4 0',
-    'APPLICATION 3 4 0 0 0 4 0 0 0',
+    'APPLICATION 8 0 4 0 4 0 0 0 0',
+    'APPLICATION 0 4 4 0 0 0 0 0 0',
     'APPLICATION 6 4 0 0 0 0 0 0 4',
     'APPLICATION 1 4 0 4 0 0 0 0 0',
-    'APPLICATION 8 0 4 0 4 0 0 0 0',
-    '1 1 0 1',
-    '0 0 2 0',
+    'APPLICATION 11 0 4 0 0 0 0 4 0',
+    'APPLICATION 24 0 0 0 0 4 0 0 4',
+    'APPLICATION 13 0 0 4 4 0 0 0 0',
+    'APPLICATION 22 0 0 0 0 4 4 0 0',
+    'APPLICATION 12 0 4 0 0 0 0 0 4',
+    'APPLICATION 20 0 0 0 4 0 0 4 0',
+    'APPLICATION 9 0 4 0 0 4 0 0 0',
+    '7 0 0 0',
+    '1 1 0 0',
     '4',
-    'HAND 1 1 3 0 0 0 0 0 0 0',
-    'DRAW 0 0 0 0 0 0 0 0 3 2',
-    'DISCARD 3 1 0 1 1 0 0 0 4 4',
-    'OPPONENT_CARDS 0 0 0 0 0 0 1 0 2 6',
-    '8',
-    'MOVE 2',
-    'MOVE 3',
-    'MOVE 4',
-    'MOVE 5',
-    'MOVE 6',
-    'MOVE 7',
-    'MOVE 0',
+    'HAND 0 0 0 0 0 0 0 1 2 2',
+    'DRAW 1 0 0 0 0 0 0 0 1 0',
+    'DISCARD 0 1 0 0 0 0 1 0 1 2',
+    'OPPONENT_CARDS 0 2 0 1 1 0 0 0 2 10',
+    '3',
+    'REFACTORING',
     'RANDOM',
+    'WAIT',
 ]
 export function readline() {
     return _readline_commands[_readline_indexer++];
 }
 //#endregion
 
-
+/*
+PLAY_CARD:
+    TRAINING: Draw 2 extra cards from the draw pile. Play one more card.
+    CODING: Draw 1 card from the draw pile. Play two more cards.
+    DAILY_ROUTINE: -> Permanent skills. Use more desks.
+    REFACTORING: Remove 1 tech debt card
+*/
 
 function readlineDEBUG() {
     const line = readline();
@@ -71,16 +72,17 @@ enum CardLocation {
     // OPPONENT_AUTOMATED = 'OPPONENT_AUTOMATED'
 }
 
-// enum CardType {
-//     training = 'training',
-//     coding = 'coding',
-//     dailyRoutine = 'dailyRoutine',
-//     taskPrioritization = 'taskPrioritization',
-//     architectureStudy = 'architectureStudy',
-//     continuousDelivery = 'continuousDelivery',
-//     codeReview = 'codeReview',
-//     refactoring = 'refactoring'
-// }
+enum CardPlays {
+    TRAINING,
+    CODING,
+    DAILY_ROUTINE,
+    TASK_PRIORIZATION,
+    ARCITECTURE_STUDY,
+    CONTINOUS_DELIVERY,
+    CODE_REVIEW,
+    REFACTORING
+}
+
 enum CardType {
     training,
     coding,
@@ -91,7 +93,7 @@ enum CardType {
     codeReview,
     refactoring,
     bonus,
-    technicalDept
+    technicalDebt
 }
 
 type CardScore = { count: number, score: number }
@@ -144,13 +146,15 @@ type Command = MoveCommand | ReleaseCommand | UnsupportedCommand;
 
 class Game {
     private isFirstRun = true;
+    // private haveDailyRoutine = true;
+    private appToRelease: ScoredApp = null;
+
     private gamePhase: string;
     private applications: Application[];
     private players: Player[];
     private cards: CardLocations;
     private commands: Command[];
 
-    private appToRelease: ScoredApp = null;
 
     public step() {
 
@@ -167,8 +171,7 @@ class Game {
                 break;
 
             case 'PLAY_CARD':
-                console.error('PLAY_CARD is not implemented yet. Doing a random action')
-                console.log('RANDOM')
+                this.processPlayCard();
                 break;
 
             case 'RELEASE':
@@ -182,39 +185,17 @@ class Game {
         }
     }
 
+
+
     private processMove() {
-
-        // function createDeskMap(moves: string[]) {
-        //     const deskMap: { [desk: number]: boolean } = {}
-        //     const deskNumbers = moves.filter(move => move.startsWith('MOVE ')).map(move => +move.substring(5));
-        //     for (const desk of deskNumbers) deskMap[desk] = true;
-        //     // console.error('Available desks', deskMap);
-        //     return deskMap;
-        // }
-
-        // function buildLocationsToAvoid(myLocation, opponentLocation) {
-        //     const desks = []
-        //     if (myLocation !== -1) desks.push(my.location);
-        //     if (opponentLocation !== -1) {
-        //         desks.push(opponentLocation)
-        //         desks.push((opponentLocation + 1) % 8)
-        //         desks.push((opponentLocation - 1 + 8) % 8)
-        //     }
-        //     return desks
-        // }
-
         this.appToRelease = null;
 
         const my = this.players[0];
         const opponent = this.players[1];
         const myHand = this.cards[CardLocation[CardLocation.HAND]];
-        // const deskMap = createDeskMap(this.moves);
-        // const locationsToAvoid = buildLocationsToAvoid(my.location, opponent.location)
-
-
-        // const bestDesks = Game.sortDesksByCardNeed(this.applications);
 
         const moves = this.commands.filter(isOfTypeMove);
+
 
 
         const penaltyLocations = opponent.location === -1
@@ -266,26 +247,124 @@ class Game {
         const chosenMove = consideredMoves[0];
         console.log(chosenMove.text);
         
-        
-        function distanceTo(desk: Desk, location: number) {
-            return (desk - location + 8) % 8;
-        }
-        
-        function isOfTypeMove(command: Command): command is MoveCommand { return command.verb === 'MOVE'; }
+    }
 
-        function sortAppsByScore(prev: ScoredApp, next: ScoredApp) {
-            return prev.score < next.score ? -1 : 1;
+    private processPlayCard() {
+        const plays = this.commands.filter(command => command.verb === 'PLAY_CARD');
+        console.error('possible plays', plays);
+
+        // const numberOfCardsOnHand = Object.values(this.cards.HAND).map(value=>value.count).reduce((a,b)=>a+b);
+        // const minCardsNeededByApp = this.applications.map(app=>Object.values(app.cards).reduce((a,b)=>a+b)).reduce((a,b)=>a<b?a:b);
+
+        const scoredApp = this.appToRelease
+            ? Game.scoreApps([this.appToRelease], this.cards.HAND)[0]
+            : { id: -1, score: 99999 };
+
+        if(scoredApp.id>=0){
+            console.error(`Trying to release app ${scoredApp.id} with score ${scoredApp.score}`);
         }
 
-        function filterPenaltyMoves(moves: MoveCommand[], deskIndex: number){
-            if (deskIndex<0)
-                return moves;
-                
-            return moves
-                .filter(move => move.desk !== deskIndex)
-                .filter(move => move.desk !== (deskIndex + 1) % 8)
-                .filter(move => move.desk !== (deskIndex - 1 + 8) % 8);
+
+        if (plays.filter(play=>play.text === CardPlays[CardPlays.CONTINOUS_DELIVERY]).length) {
+            console.error('Considering to play CI card');
+            const skillCards = Object.entries(this.cards.HAND)
+                .filter(x=>x[1].score>0)
+                .filter(x=>x[0] !== "BONUS")
+                .map(x=>x[0]);
+            
+            console.error('skill cards on hand', skillCards);
+            if(skillCards.length) {
+                console.log(CardPlays[CardPlays.CONTINOUS_DELIVERY], skillCards[0]);
+                return;
+            }
         }
+
+
+
+        if (plays.filter(play => play.text === CardPlays[CardPlays.DAILY_ROUTINE]).length){
+            console.error('Considering to play daily routine card');
+            if (this.players[0].permanentDailyRoutineCards === 0) {
+                console.error(`Not played daily routine before.`);
+                if (scoredApp.score > 0) {
+                    console.log(`DAILY_ROUTINE`);
+                    // this.haveDailyRoutine = true;
+                    return;
+                }
+            }
+        }
+
+        if (isScoredApp(scoredApp)) {
+
+            if (plays.filter(play=>play.text==='TRAINING').length) {
+                console.error('Considering to play training card');
+                if(this.cards.HAND.training.score > this.appToRelease.cards.training) {
+                    console.error('Have extra training card to use');
+                    const usefulCards = Object.keys(this.cards.DRAW)
+                        .filter(card => card === 'BONUS' || scoredApp.cards[card] > 0)
+                    
+                    console.error('Useful cards in the draw pile', usefulCards);
+                    if (usefulCards.length) {
+                        console.log(`TRAINING`);
+                        return;
+                    }
+                }
+            }
+
+
+            
+            if (plays.filter(play=>play.text==='REFACTORING').length) {
+                console.error('Considering to play refactoring card');
+                if(this.cards.HAND.refactoring.count > this.appToRelease.cards.refactoring) {
+                    console.error('Have extra refactoring card to use');
+                    if(this.cards.HAND.technicalDebt.count > 0) {
+                        console.error('Have tech debt to throw');
+                        console.log(`REFACTORING`);
+                        return;
+                    }
+                }
+            }
+
+
+
+
+        }
+        else {
+            console.error(`Not close to release an app`);
+
+
+
+            if (plays.filter(play=>play.text===CardPlays[CardPlays.REFACTORING]).length) {
+                console.error('Considering to play refactoring card');
+                console.error(this.cards.HAND)
+                if(this.cards.HAND.technicalDebt.count > 0) {
+                    console.error('Have tech debt to throw');
+                    console.log(`REFACTORING`);
+                    return;
+                }
+            }            
+        }
+
+
+        if (plays.filter(play=>play.text === CardPlays[CardPlays.CODE_REVIEW]).length) {
+            console.log(CardPlays[CardPlays.CODE_REVIEW]);
+            return;
+        }
+
+        if (plays.filter(play=>play.text === CardPlays[CardPlays.ARCITECTURE_STUDY]).length) {
+            console.log(CardPlays[CardPlays.ARCITECTURE_STUDY]);
+            return;
+        }
+
+        if (plays.filter(play=>play.text === CardPlays[CardPlays.TASK_PRIORIZATION]).length) {
+            console.log(CardPlays[CardPlays.TASK_PRIORIZATION], "BONUS", "CODING");
+            return;
+        }
+
+        console.log('WAIT');
+        // if(plays.length)
+        //     console.log(plays[0].text);
+        // else
+        //     console.log('RANDOM');
     }
 
     static sortDesksByCardNeed(applications: Application[]): Desk[] {
@@ -371,6 +450,7 @@ class Game {
             console.error('Previous phase already decided to release', this.appToRelease)
             console.log('RELEASE ' + this.appToRelease.id);
             this.appToRelease = null;
+            // this.haveDailyRoutine = false;
         }
         else {
 
@@ -388,6 +468,7 @@ class Game {
     
             if (bestApp.score <= MAX_ACCEPTABLE_TECHDEPT && shoddyPoints >= bestApp.score) {
                 console.log('RELEASE ' + bestApp.id);
+                // this.haveDailyRoutine = false;
             }
             else {
                 console.log('WAIT');
@@ -515,13 +596,44 @@ class Game {
                     moves.push({ verb: parts[0], text, app });
                     break;
                 default:
-                    moves.push({ verb: parts[0], text });
+                    if (parts[0] in CardPlays) {
+                        moves.push({ verb: 'PLAY_CARD', text });
+                    }
+                    else {
+                        moves.push({ verb: parts[0], text });
+                    }
                     break;
             }
         }
+        console.error('Possible commands', moves);
         return moves;
     }
 }
+
+
+
+        
+function distanceTo(desk: Desk, location: number) {
+    return (desk - location + 8) % 8;
+}
+
+function isOfTypeMove(command: Command): command is MoveCommand { return command.verb === 'MOVE'; }
+function isScoredApp(app: {id: number}): app is ScoredApp { return app.id>0; }
+
+function sortAppsByScore(prev: ScoredApp, next: ScoredApp) {
+    return prev.score < next.score ? -1 : 1;
+}
+
+function filterPenaltyMoves(moves: MoveCommand[], deskIndex: number){
+    if (deskIndex<0)
+        return moves;
+        
+    return moves
+        .filter(move => move.desk !== deskIndex)
+        .filter(move => move.desk !== (deskIndex + 1) % 8)
+        .filter(move => move.desk !== (deskIndex - 1 + 8) % 8);
+}
+
 
 
 
